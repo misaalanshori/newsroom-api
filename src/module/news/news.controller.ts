@@ -7,13 +7,19 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { NewsService } from './news.service';
 import { CreateNewsDto } from './dto/createNews.dto';
 import { UpdateNewsDto } from './dto/updateNews.dto';
-import { ApiParam } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import type { Request } from 'express';
 
 @Controller('news')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 export class NewsController {
   constructor(private readonly newsService: NewsService) {}
 
@@ -29,8 +35,15 @@ export class NewsController {
   }
 
   @Post()
-  async create(@Body() createNewsDto: CreateNewsDto) {
-    return await this.newsService.create(createNewsDto);
+  async create(@Body() createNewsDto: CreateNewsDto, @Req() req: Request) {
+    const user = (
+      req as Request & { user: { sub: number; departmentId: number } }
+    ).user;
+    return await this.newsService.create(
+      createNewsDto,
+      user.sub,
+      user.departmentId,
+    );
   }
 
   @Put(':id')

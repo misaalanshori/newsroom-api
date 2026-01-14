@@ -19,10 +19,33 @@ model News {
   contents     String
   department   Department @relation(fields: [departmentId], references: [id])
   departmentId Int
+  writer       User @relation(fields: [writerId], references: [id])
+  writerId     Int
 }
 
 model Department {
   id   Int    @id @default(autoincrement())
   name String
+  slug String @unique
+  users User[]
   news News[]
 }
+
+model Role {
+  id   Int    @id @default(autoincrement())
+  name String
+  slug String @unique
+  users User[]
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  username String
+  password_hash String
+  role     Role @relation(fields: [roleId], references: [id])
+  roleId Int
+  department Department @relation(fields: [departmentId], references: [id])
+  departmentId Int
+  news     News[]
+}
+

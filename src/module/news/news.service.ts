@@ -9,14 +9,14 @@ export class NewsService {
 
   getAll() {
     return this.prisma.news.findMany({
-      include: { department: true },
+      include: { department: true, writer: { omit: { password_hash: true } } },
     });
   }
 
   async getOne(id: number) {
     const news = await this.prisma.news.findUnique({
       where: { id },
-      include: { department: true },
+      include: { department: true, writer: { omit: { password_hash: true } } },
     });
     if (!news) {
       throw new NotFoundException(`News with ID ${id} not found`);
@@ -24,10 +24,16 @@ export class NewsService {
     return news;
   }
 
-  create(dto: CreateNewsDto) {
+  create(dto: CreateNewsDto, writerId: number, userDepartmentId: number) {
+    const departmentId = dto.departmentId ?? userDepartmentId;
     return this.prisma.news.create({
-      data: dto,
-      include: { department: true },
+      data: {
+        title: dto.title,
+        contents: dto.contents,
+        departmentId,
+        writerId,
+      },
+      include: { department: true, writer: { omit: { password_hash: true } } },
     });
   }
 
@@ -36,7 +42,7 @@ export class NewsService {
     return this.prisma.news.update({
       where: { id },
       data: dto,
-      include: { department: true },
+      include: { department: true, writer: { omit: { password_hash: true } } },
     });
   }
 

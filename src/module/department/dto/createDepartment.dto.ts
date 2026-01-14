@@ -6,4 +6,9 @@ export class CreateDepartmentDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @ApiProperty({ description: 'Department slug (unique identifier)' })
+  @IsString()
+  @IsNotEmpty()
+  slug: string;
 }

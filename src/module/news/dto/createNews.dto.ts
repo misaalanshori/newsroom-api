@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateNewsDto {
@@ -12,7 +12,11 @@ export class CreateNewsDto {
   @IsNotEmpty()
   contents: string;
 
-  @ApiProperty({ description: 'Department ID' })
+  @ApiProperty({
+    description: 'Department ID (optional, defaults to user department)',
+    required: false,
+  })
   @IsInt()
-  departmentId: number;
+  @IsOptional()
+  departmentId?: number;
 }

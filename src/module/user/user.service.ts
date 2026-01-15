@@ -27,9 +27,21 @@ export class UserService {
     roleId = 1,
     departmentId = 1,
   ) {
+    const userCount = await this.prisma.user.count();
+    let finalRoleId = roleId;
+
+    if (userCount === 0) {
+      const superAdminRole = await this.prisma.role.findUnique({
+        where: { slug: 'super-admin' },
+      });
+      if (superAdminRole) {
+        finalRoleId = superAdminRole.id;
+      }
+    }
+
     const password_hash = await bcrypt.hash(password, 10);
     return this.prisma.user.create({
-      data: { username, password_hash, roleId, departmentId },
+      data: { username, password_hash, roleId: finalRoleId, departmentId },
       include: { role: true, department: true },
       omit: { password_hash: true },
     });

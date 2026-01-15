@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Delete,
-  ForbiddenException,
   Get,
   Param,
   ParseIntPipe,
@@ -21,7 +20,6 @@ import {
   AuthzGuard,
   RequirePermission,
   AuthzService,
-  AuthResource,
 } from '../../common/authz';
 
 @Controller('news')
@@ -50,10 +48,11 @@ export class NewsController {
   async create(@Body() createNewsDto: CreateNewsDto, @User() user: JwtPayload) {
     // For creation, user becomes the writer and news goes to their dept (or specified dept)
     const targetDept = createNewsDto.departmentId ?? user.departmentId;
-    await this.checkNewsWritePermission(user, {
-      departmentId: targetDept,
-      writerId: user.sub,
-    });
+    await this.authzService.checkPermission(
+      { id: user.sub, role: user.role, department: user.departmentId },
+      { type: 'news', department: targetDept, writer: user.sub },
+      'write',
+    );
     return await this.newsService.create(
       createNewsDto,
       user.sub,
@@ -69,7 +68,11 @@ export class NewsController {
     @User() user: JwtPayload,
   ) {
     const news = await this.newsService.getOne(id);
-    await this.checkNewsWritePermission(user, news);
+    await this.authzService.checkPermission(
+      { id: user.sub, role: user.role, department: user.departmentId },
+      { type: 'news', department: news.departmentId, writer: news.writerId },
+      'write',
+    );
     return await this.newsService.update(id, updateNewsDto);
   }
 
@@ -80,30 +83,11 @@ export class NewsController {
     @User() user: JwtPayload,
   ) {
     const news = await this.newsService.getOne(id);
-    await this.checkNewsWritePermission(user, news);
+    await this.authzService.checkPermission(
+      { id: user.sub, role: user.role, department: user.departmentId },
+      { type: 'news', department: news.departmentId, writer: news.writerId },
+      'write',
+    );
     return await this.newsService.delete(id);
-  }
-
-  /**
-   * Check write permission using the actual news resource data
-   */
-  private async checkNewsWritePermission(
-    user: JwtPayload,
-    news: { departmentId: number; writerId: number },
-  ) {
-    const subject = {
-      id: user.sub,
-      role: user.role,
-      department: user.departmentId,
-    };
-    const resource: AuthResource = {
-      type: 'news',
-      department: news.departmentId,
-      writer: news.writerId,
-    };
-    const allowed = await this.authzService.enforce(subject, resource, 'write');
-    if (!allowed) {
-      throw new ForbiddenException('Access denied: cannot write this news');
-    }
   }
 }

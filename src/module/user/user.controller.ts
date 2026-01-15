@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Delete,
-  ForbiddenException,
   Get,
   NotFoundException,
   Param,
@@ -20,7 +19,6 @@ import {
   AuthzGuard,
   RequirePermission,
   AuthzService,
-  AuthResource,
 } from '../../common/authz';
 
 @Controller('user')
@@ -58,7 +56,11 @@ export class UserController {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
     // Check authorization - can read if super-admin OR own profile
-    await this.checkUserReadPermission(user, targetUser);
+    await this.authzService.checkPermission(
+      { id: user.sub, role: user.role, department: user.departmentId },
+      { type: 'user', writer: targetUser.id },
+      'read',
+    );
     return targetUser;
   }
 
@@ -76,11 +78,19 @@ export class UserController {
 
     // Check if sensitive fields are being updated
     if (updateUserDto.roleId || updateUserDto.departmentId) {
-      await this.checkUserSensitiveWritePermission(user);
+      await this.authzService.checkPermission(
+        { id: user.sub, role: user.role, department: user.departmentId },
+        { type: 'user' },
+        'write:sensitive',
+      );
     }
 
     // Check basic write permission
-    await this.checkUserWritePermission(user, targetUser);
+    await this.authzService.checkPermission(
+      { id: user.sub, role: user.role, department: user.departmentId },
+      { type: 'user', writer: targetUser.id },
+      'write',
+    );
 
     return await this.userService.update(id, updateUserDto);
   }
@@ -95,58 +105,11 @@ export class UserController {
     if (!targetUser) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
-    await this.checkUserWritePermission(user);
-    return await this.userService.delete(id);
-  }
-
-  private async checkUserReadPermission(
-    actor: JwtPayload,
-    targetUser: { id: number },
-  ) {
-    const subject = {
-      id: actor.sub,
-      role: actor.role,
-      department: actor.departmentId,
-    };
-    const resource: AuthResource = { type: 'user', writer: targetUser.id };
-    const allowed = await this.authzService.enforce(subject, resource, 'read');
-    if (!allowed) {
-      throw new ForbiddenException('Access denied: cannot read this user');
-    }
-  }
-
-  private async checkUserWritePermission(
-    actor: JwtPayload,
-    targetUser?: { id: number },
-  ) {
-    const subject = {
-      id: actor.sub,
-      role: actor.role,
-      department: actor.departmentId,
-    };
-    const resource: AuthResource = { type: 'user', writer: targetUser?.id };
-    const allowed = await this.authzService.enforce(subject, resource, 'write');
-    if (!allowed) {
-      throw new ForbiddenException('Access denied: cannot modify users');
-    }
-  }
-
-  private async checkUserSensitiveWritePermission(actor: JwtPayload) {
-    const subject = {
-      id: actor.sub,
-      role: actor.role,
-      department: actor.departmentId,
-    };
-    const resource: AuthResource = { type: 'user' };
-    const allowed = await this.authzService.enforce(
-      subject,
-      resource,
-      'write:sensitive',
+    await this.authzService.checkPermission(
+      { id: user.sub, role: user.role, department: user.departmentId },
+      { type: 'user', writer: targetUser.id },
+      'write',
     );
-    if (!allowed) {
-      throw new ForbiddenException(
-        'Access denied: cannot modify sensitive fields (role/department)',
-      );
-    }
+    return await this.userService.delete(id);
   }
 }

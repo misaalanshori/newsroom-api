@@ -45,6 +45,7 @@ export class UserController {
     // Get all permissions (implicit included)
     const permissions = await this.authzService.getPermissionsForUser(
       result.role.slug,
+      result.id,
     );
     return { ...result, permissions };
   }

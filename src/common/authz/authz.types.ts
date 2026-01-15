@@ -5,7 +5,7 @@
 /**
  * Actions that can be performed on resources
  */
-export type AuthAction = 'read' | 'write';
+export type AuthAction = 'read' | 'write' | 'write:sensitive';
 
 /**
  * Subject (user) context for authorization.

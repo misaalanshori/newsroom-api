@@ -73,7 +73,15 @@ export class UserController {
     if (!targetUser) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
-    await this.checkUserWritePermission(user);
+
+    // Check if sensitive fields are being updated
+    if (updateUserDto.roleId || updateUserDto.departmentId) {
+      await this.checkUserSensitiveWritePermission(user);
+    }
+
+    // Check basic write permission
+    await this.checkUserWritePermission(user, targetUser);
+
     return await this.userService.update(id, updateUserDto);
   }
 
@@ -107,16 +115,38 @@ export class UserController {
     }
   }
 
-  private async checkUserWritePermission(actor: JwtPayload) {
+  private async checkUserWritePermission(
+    actor: JwtPayload,
+    targetUser?: { id: number },
+  ) {
+    const subject = {
+      id: actor.sub,
+      role: actor.role,
+      department: actor.departmentId,
+    };
+    const resource: AuthResource = { type: 'user', writer: targetUser?.id };
+    const allowed = await this.authzService.enforce(subject, resource, 'write');
+    if (!allowed) {
+      throw new ForbiddenException('Access denied: cannot modify users');
+    }
+  }
+
+  private async checkUserSensitiveWritePermission(actor: JwtPayload) {
     const subject = {
       id: actor.sub,
       role: actor.role,
       department: actor.departmentId,
     };
     const resource: AuthResource = { type: 'user' };
-    const allowed = await this.authzService.enforce(subject, resource, 'write');
+    const allowed = await this.authzService.enforce(
+      subject,
+      resource,
+      'write:sensitive',
+    );
     if (!allowed) {
-      throw new ForbiddenException('Access denied: cannot modify users');
+      throw new ForbiddenException(
+        'Access denied: cannot modify sensitive fields (role/department)',
+      );
     }
   }
 }

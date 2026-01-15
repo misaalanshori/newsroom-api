@@ -14,30 +14,35 @@ import { CreateDepartmentDto } from './dto/createDepartment.dto';
 import { UpdateDepartmentDto } from './dto/updateDepartment.dto';
 import { ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AuthzGuard, RequirePermission } from '../../common/authz';
 
 @Controller('department')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AuthzGuard)
 @ApiBearerAuth()
 export class DepartmentController {
   constructor(private readonly departmentService: DepartmentService) {}
 
   @Get()
+  @RequirePermission('department', 'read')
   async getAll() {
     return await this.departmentService.getAll();
   }
 
   @Get(':id')
+  @RequirePermission('department', 'read')
   @ApiParam({ name: 'id', required: true, description: 'Department ID' })
   async getOne(@Param('id', ParseIntPipe) id: number) {
     return await this.departmentService.getOne(id);
   }
 
   @Post()
+  @RequirePermission('department', 'write')
   async create(@Body() createDepartmentDto: CreateDepartmentDto) {
     return await this.departmentService.create(createDepartmentDto);
   }
 
   @Put(':id')
+  @RequirePermission('department', 'write')
   @ApiParam({ name: 'id', required: true, description: 'Department ID' })
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -47,6 +52,7 @@ export class DepartmentController {
   }
 
   @Delete(':id')
+  @RequirePermission('department', 'write')
   @ApiParam({ name: 'id', required: true, description: 'Department ID' })
   async delete(@Param('id', ParseIntPipe) id: number) {
     return await this.departmentService.delete(id);

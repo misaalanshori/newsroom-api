@@ -31,7 +31,7 @@ export class NewsController {
   constructor(
     private readonly newsService: NewsService,
     private readonly authzService: AuthzService,
-  ) { }
+  ) {}
 
   @Get()
   @RequirePermission('news', 'read')

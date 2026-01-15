@@ -46,4 +46,27 @@ export class UserService {
       omit: { password_hash: true },
     });
   }
+
+  findAll() {
+    return this.prisma.user.findMany({
+      include: { role: true, department: true },
+      omit: { password_hash: true },
+    });
+  }
+
+  async update(
+    id: number,
+    data: { username?: string; roleId?: number; departmentId?: number },
+  ) {
+    return this.prisma.user.update({
+      where: { id },
+      data,
+      include: { role: true, department: true },
+      omit: { password_hash: true },
+    });
+  }
+
+  async delete(id: number) {
+    return this.prisma.user.delete({ where: { id } });
+  }
 }

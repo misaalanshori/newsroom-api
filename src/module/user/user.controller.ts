@@ -42,7 +42,11 @@ export class UserController {
     if (!result) {
       throw new NotFoundException('User not found');
     }
-    return result;
+    // Get all permissions (implicit included)
+    const permissions = await this.authzService.getPermissionsForUser(
+      result.role.slug,
+    );
+    return { ...result, permissions };
   }
 
   @Get(':id')

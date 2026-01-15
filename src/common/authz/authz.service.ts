@@ -41,6 +41,29 @@ export class AuthzService implements OnModuleInit {
   }
 
   /**
+   * Get all permissions allowed for a user role
+   */
+  async getPermissionsForUser(role: string): Promise<any[]> {
+    const inheritedRoles = await this.enforcer.getImplicitRolesForUser(role);
+    const allRoles = [role, ...inheritedRoles];
+    const allPermissions: string[][] = [];
+
+    for (const r of allRoles) {
+      const policies = await this.enforcer.getFilteredPolicy(0, r);
+      allPermissions.push(...policies);
+    }
+
+    // Mapping based on policy.conf format:
+    // p, role, resource, scope, ownership, action
+    return allPermissions.map((p) => ({
+      resource: p[1],
+      scope: p[2],
+      ownership: p[3],
+      action: p[4],
+    }));
+  }
+
+  /**
    * Get the raw enforcer for advanced use cases
    */
   getEnforcer(): Enforcer {

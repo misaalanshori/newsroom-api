@@ -49,3 +49,16 @@ model User {
   news     News[]
 }
 
+model CasbinRule {
+  id    Int     @id @default(autoincrement())
+  ptype String  // "p" for policy, "g" for grouping/role inheritance
+  v0    String? // role or subject
+  v1    String? // resource (p) or parent role (g)
+  v2    String? // scope
+  v3    String? // ownership
+  v4    String? // action
+  v5    String? // reserved for extensibility
+
+  @@map("casbin_rules")
+}
+

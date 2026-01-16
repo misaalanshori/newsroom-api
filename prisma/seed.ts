@@ -58,6 +58,42 @@ async function main() {
     ]);
     console.log(`✅ Created ${departments.length} departments`);
 
+    // --- Casbin Policies (moved from policy.conf) ---
+    // Clear existing rules first
+    await prisma.casbinRule.deleteMany({});
+
+    // Role hierarchy (g rules)
+    const roleHierarchy = [
+        { ptype: 'g', v0: 'super-admin', v1: 'admin' },
+        { ptype: 'g', v0: 'admin', v1: 'editor' },
+        { ptype: 'g', v0: 'editor', v1: 'reader' },
+    ];
+
+    // Permission policies (p rules)
+    // Format: ptype, role, resource, scope, ownership, action
+    const policies = [
+        // News
+        { ptype: 'p', v0: 'reader', v1: 'news', v2: 'global', v3: 'any', v4: 'read' },
+        { ptype: 'p', v0: 'reader', v1: 'department', v2: 'global', v3: 'any', v4: 'read' },
+        { ptype: 'p', v0: 'editor', v1: 'news', v2: 'department', v3: 'own', v4: 'write' },
+        { ptype: 'p', v0: 'admin', v1: 'news', v2: 'department', v3: 'any', v4: 'write' },
+        { ptype: 'p', v0: 'super-admin', v1: 'news', v2: 'global', v3: 'any', v4: 'write' },
+        { ptype: 'p', v0: 'super-admin', v1: 'department', v2: 'global', v3: 'any', v4: 'write' },
+        // User
+        { ptype: 'p', v0: 'reader', v1: 'user', v2: 'global', v3: 'own', v4: 'read' },
+        { ptype: 'p', v0: 'reader', v1: 'user', v2: 'global', v3: 'own', v4: 'write' },
+        { ptype: 'p', v0: 'super-admin', v1: 'user', v2: 'global', v3: 'any', v4: 'read' },
+        { ptype: 'p', v0: 'super-admin', v1: 'user', v2: 'global', v3: 'any', v4: 'write' },
+        { ptype: 'p', v0: 'super-admin', v1: 'user', v2: 'global', v3: 'any', v4: 'write:sensitive' },
+        // Role
+        { ptype: 'p', v0: 'super-admin', v1: 'role', v2: 'global', v3: 'any', v4: 'read' },
+    ];
+
+    await prisma.casbinRule.createMany({
+        data: [...roleHierarchy, ...policies],
+    });
+    console.log(`✅ Created ${roleHierarchy.length + policies.length} Casbin rules`);
+
     console.log('🎉 Seeding complete!');
 }
 

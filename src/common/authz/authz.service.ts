@@ -1,16 +1,21 @@
 import { ForbiddenException, Injectable, OnModuleInit } from '@nestjs/common';
 import { newEnforcer, Enforcer } from 'casbin';
+import { PrismaAdapter } from 'casbin-prisma-adapter';
 import * as path from 'path';
 import type { AuthSubject, AuthResource, AuthAction } from './authz.types';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AuthzService implements OnModuleInit {
   private enforcer: Enforcer;
 
+  constructor(private readonly prisma: PrismaService) { }
+
   async onModuleInit() {
     const modelPath = path.resolve(process.cwd(), 'model.conf');
-    const policyPath = path.resolve(process.cwd(), 'policy.conf');
-    this.enforcer = await newEnforcer(modelPath, policyPath);
+    // Use Prisma adapter with our existing PrismaClient instance
+    const adapter = await PrismaAdapter.newAdapter(this.prisma);
+    this.enforcer = await newEnforcer(modelPath, adapter);
   }
 
   /**

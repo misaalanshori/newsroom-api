@@ -28,7 +28,7 @@ export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly authzService: AuthzService,
-  ) {}
+  ) { }
 
   @Get()
   @RequirePermission('user', 'read')
@@ -86,7 +86,7 @@ export class UserController {
       await this.authzService.checkPermission(
         { id: user.sub, role: user.role, department: user.departmentId },
         { type: 'user' },
-        'write:sensitive',
+        'update:sensitive',
       );
     }
 
@@ -94,7 +94,7 @@ export class UserController {
     await this.authzService.checkPermission(
       { id: user.sub, role: user.role, department: user.departmentId },
       { type: 'user', writer: targetUser.id },
-      'write',
+      'update',
     );
 
     return await this.userService.update(id, updateUserDto);
@@ -113,7 +113,7 @@ export class UserController {
     await this.authzService.checkPermission(
       { id: user.sub, role: user.role, department: user.departmentId },
       { type: 'user', writer: targetUser.id },
-      'write',
+      'delete',
     );
     return await this.userService.delete(id);
   }

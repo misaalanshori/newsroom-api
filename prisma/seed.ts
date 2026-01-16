@@ -71,26 +71,52 @@ async function main() {
 
     // Permission policies (p rules)
     // Format: ptype, role, resource, scope, ownership, action
+    // Actions: create, read, update, delete, update:sensitive
     const policies = [
-        // News
+        // === NEWS ===
+        // Reader: can read news globally
         { ptype: 'p', v0: 'reader', v1: 'news', v2: 'global', v3: 'any', v4: 'read' },
+        // Editor: can create and update own news in their department
+        { ptype: 'p', v0: 'editor', v1: 'news', v2: 'department', v3: 'own', v4: 'create' },
+        { ptype: 'p', v0: 'editor', v1: 'news', v2: 'department', v3: 'own', v4: 'update' },
+        // Admin: can create, update, delete any news in their department
+        { ptype: 'p', v0: 'admin', v1: 'news', v2: 'department', v3: 'any', v4: 'create' },
+        { ptype: 'p', v0: 'admin', v1: 'news', v2: 'department', v3: 'any', v4: 'update' },
+        { ptype: 'p', v0: 'admin', v1: 'news', v2: 'department', v3: 'any', v4: 'delete' },
+        // Super-Admin: full CRUD on news globally
+        { ptype: 'p', v0: 'super-admin', v1: 'news', v2: 'global', v3: 'any', v4: 'create' },
+        { ptype: 'p', v0: 'super-admin', v1: 'news', v2: 'global', v3: 'any', v4: 'update' },
+        { ptype: 'p', v0: 'super-admin', v1: 'news', v2: 'global', v3: 'any', v4: 'delete' },
+
+        // === DEPARTMENT ===
+        // Reader: can read departments
         { ptype: 'p', v0: 'reader', v1: 'department', v2: 'global', v3: 'any', v4: 'read' },
-        { ptype: 'p', v0: 'editor', v1: 'news', v2: 'department', v3: 'own', v4: 'write' },
-        { ptype: 'p', v0: 'admin', v1: 'news', v2: 'department', v3: 'any', v4: 'write' },
-        { ptype: 'p', v0: 'super-admin', v1: 'news', v2: 'global', v3: 'any', v4: 'write' },
-        { ptype: 'p', v0: 'super-admin', v1: 'department', v2: 'global', v3: 'any', v4: 'write' },
-        // User
+        // Super-Admin: full CRUD on departments
+        { ptype: 'p', v0: 'super-admin', v1: 'department', v2: 'global', v3: 'any', v4: 'create' },
+        { ptype: 'p', v0: 'super-admin', v1: 'department', v2: 'global', v3: 'any', v4: 'update' },
+        { ptype: 'p', v0: 'super-admin', v1: 'department', v2: 'global', v3: 'any', v4: 'delete' },
+
+        // === USER ===
+        // Reader: can read and update own profile (non-sensitive fields)
         { ptype: 'p', v0: 'reader', v1: 'user', v2: 'global', v3: 'own', v4: 'read' },
-        { ptype: 'p', v0: 'reader', v1: 'user', v2: 'global', v3: 'own', v4: 'write' },
+        { ptype: 'p', v0: 'reader', v1: 'user', v2: 'global', v3: 'own', v4: 'update' },
+        // Super-Admin: full CRUD on users + sensitive updates
+        { ptype: 'p', v0: 'super-admin', v1: 'user', v2: 'global', v3: 'any', v4: 'create' },
         { ptype: 'p', v0: 'super-admin', v1: 'user', v2: 'global', v3: 'any', v4: 'read' },
-        { ptype: 'p', v0: 'super-admin', v1: 'user', v2: 'global', v3: 'any', v4: 'write' },
-        { ptype: 'p', v0: 'super-admin', v1: 'user', v2: 'global', v3: 'any', v4: 'write:sensitive' },
-        // Role
+        { ptype: 'p', v0: 'super-admin', v1: 'user', v2: 'global', v3: 'any', v4: 'update' },
+        { ptype: 'p', v0: 'super-admin', v1: 'user', v2: 'global', v3: 'any', v4: 'delete' },
+        { ptype: 'p', v0: 'super-admin', v1: 'user', v2: 'global', v3: 'any', v4: 'update:sensitive' },
+
+        // === ROLE ===
         { ptype: 'p', v0: 'super-admin', v1: 'role', v2: 'global', v3: 'any', v4: 'read' },
-        { ptype: 'p', v0: 'super-admin', v1: 'role', v2: 'global', v3: 'any', v4: 'write' },
-        // Policy Management
+        { ptype: 'p', v0: 'super-admin', v1: 'role', v2: 'global', v3: 'any', v4: 'create' },
+        { ptype: 'p', v0: 'super-admin', v1: 'role', v2: 'global', v3: 'any', v4: 'update' },
+        { ptype: 'p', v0: 'super-admin', v1: 'role', v2: 'global', v3: 'any', v4: 'delete' },
+
+        // === POLICY ===
         { ptype: 'p', v0: 'super-admin', v1: 'policy', v2: 'global', v3: 'any', v4: 'read' },
-        { ptype: 'p', v0: 'super-admin', v1: 'policy', v2: 'global', v3: 'any', v4: 'write' },
+        { ptype: 'p', v0: 'super-admin', v1: 'policy', v2: 'global', v3: 'any', v4: 'create' },
+        { ptype: 'p', v0: 'super-admin', v1: 'policy', v2: 'global', v3: 'any', v4: 'delete' },
     ];
 
     await prisma.casbinRule.createMany({

@@ -29,7 +29,7 @@ export class NewsController {
   constructor(
     private readonly newsService: NewsService,
     private readonly authzService: AuthzService,
-  ) {}
+  ) { }
 
   @Get()
   @RequirePermission('news', 'read')
@@ -51,7 +51,7 @@ export class NewsController {
     await this.authzService.checkPermission(
       { id: user.sub, role: user.role, department: user.departmentId },
       { type: 'news', department: targetDept, writer: user.sub },
-      'write',
+      'create',
     );
     return await this.newsService.create(
       createNewsDto,
@@ -71,7 +71,7 @@ export class NewsController {
     await this.authzService.checkPermission(
       { id: user.sub, role: user.role, department: user.departmentId },
       { type: 'news', department: news.departmentId, writer: news.writerId },
-      'write',
+      'update',
     );
     return await this.newsService.update(id, updateNewsDto);
   }
@@ -86,7 +86,7 @@ export class NewsController {
     await this.authzService.checkPermission(
       { id: user.sub, role: user.role, department: user.departmentId },
       { type: 'news', department: news.departmentId, writer: news.writerId },
-      'write',
+      'delete',
     );
     return await this.newsService.delete(id);
   }

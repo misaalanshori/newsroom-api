@@ -28,19 +28,19 @@ export class PolicyController {
     }
 
     @Post()
-    @RequirePermission('policy', 'write')
+    @RequirePermission('policy', 'create')
     async create(@Body() dto: CreatePolicyDto) {
         return this.policyService.create(dto);
     }
 
     @Post('reload')
-    @RequirePermission('policy', 'write')
+    @RequirePermission('policy', 'read')
     async reload() {
         return this.policyService.reloadPolicies();
     }
 
     @Delete(':id')
-    @RequirePermission('policy', 'write')
+    @RequirePermission('policy', 'delete')
     async delete(@Param('id', ParseIntPipe) id: number) {
         return this.policyService.delete(id);
     }

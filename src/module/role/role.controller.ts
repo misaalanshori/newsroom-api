@@ -34,19 +34,19 @@ export class RoleController {
     }
 
     @Post()
-    @RequirePermission('role', 'write')
+    @RequirePermission('role', 'create')
     async create(@Body() dto: CreateRoleDto) {
         return this.roleService.create(dto);
     }
 
     @Patch(':id')
-    @RequirePermission('role', 'write')
+    @RequirePermission('role', 'update')
     async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateRoleDto) {
         return this.roleService.update(id, dto);
     }
 
     @Delete(':id')
-    @RequirePermission('role', 'write')
+    @RequirePermission('role', 'delete')
     async delete(@Param('id', ParseIntPipe) id: number) {
         return this.roleService.delete(id);
     }

@@ -20,7 +20,7 @@ import { AuthzGuard, RequirePermission } from '../../common/authz';
 @UseGuards(JwtAuthGuard, AuthzGuard)
 @ApiBearerAuth()
 export class DepartmentController {
-  constructor(private readonly departmentService: DepartmentService) {}
+  constructor(private readonly departmentService: DepartmentService) { }
 
   @Get()
   @RequirePermission('department', 'read')
@@ -36,13 +36,13 @@ export class DepartmentController {
   }
 
   @Post()
-  @RequirePermission('department', 'write')
+  @RequirePermission('department', 'create')
   async create(@Body() createDepartmentDto: CreateDepartmentDto) {
     return await this.departmentService.create(createDepartmentDto);
   }
 
   @Put(':id')
-  @RequirePermission('department', 'write')
+  @RequirePermission('department', 'update')
   @ApiParam({ name: 'id', required: true, description: 'Department ID' })
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -52,7 +52,7 @@ export class DepartmentController {
   }
 
   @Delete(':id')
-  @RequirePermission('department', 'write')
+  @RequirePermission('department', 'delete')
   @ApiParam({ name: 'id', required: true, description: 'Department ID' })
   async delete(@Param('id', ParseIntPipe) id: number) {
     return await this.departmentService.delete(id);

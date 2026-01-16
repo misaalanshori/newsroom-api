@@ -4,8 +4,13 @@
 
 /**
  * Actions that can be performed on resources
+ * - create: POST (new resource)
+ * - read: GET (view resource)
+ * - update: PUT/PATCH (modify resource)
+ * - delete: DELETE (remove resource)
+ * - update:sensitive: Modify sensitive fields (e.g., roleId, departmentId)
  */
-export type AuthAction = 'read' | 'write' | 'write:sensitive';
+export type AuthAction = 'create' | 'read' | 'update' | 'delete' | 'update:sensitive';
 
 /**
  * Subject (user) context for authorization.

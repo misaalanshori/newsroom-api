@@ -7,6 +7,7 @@ import { AuthModule } from './module/auth/auth.module';
 import { UserModule } from './module/user/user.module';
 import { AuthzModule } from './common/authz/authz.module';
 import { RoleModule } from './module/role/role.module';
+import { PolicyModule } from './module/policy/policy.module';
 
 @Module({
   imports: [
@@ -18,8 +19,9 @@ import { RoleModule } from './module/role/role.module';
     DepartmentModule,
     AuthzModule,
     RoleModule,
+    PolicyModule,
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }

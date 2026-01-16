@@ -87,6 +87,9 @@ async function main() {
         { ptype: 'p', v0: 'super-admin', v1: 'user', v2: 'global', v3: 'any', v4: 'write:sensitive' },
         // Role
         { ptype: 'p', v0: 'super-admin', v1: 'role', v2: 'global', v3: 'any', v4: 'read' },
+        // Policy Management
+        { ptype: 'p', v0: 'super-admin', v1: 'policy', v2: 'global', v3: 'any', v4: 'read' },
+        { ptype: 'p', v0: 'super-admin', v1: 'policy', v2: 'global', v3: 'any', v4: 'write' },
     ];
 
     await prisma.casbinRule.createMany({

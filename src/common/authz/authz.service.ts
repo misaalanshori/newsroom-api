@@ -85,4 +85,11 @@ export class AuthzService implements OnModuleInit {
   getEnforcer(): Enforcer {
     return this.enforcer;
   }
+
+  /**
+   * Reload policies from database (call after add/remove)
+   */
+  async reloadPolicies(): Promise<void> {
+    await this.enforcer.loadPolicy();
+  }
 }
